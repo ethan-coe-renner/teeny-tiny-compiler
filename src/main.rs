@@ -1,5 +1,6 @@
 mod lex;
 mod parse;
+mod emit;
 
 use std::env;
 use std::fs;
@@ -14,9 +15,10 @@ fn main() {
     let input = fs::read_to_string(filename).expect("Error reading file");
 
     let lexer = lex::Lexer::new(input);
-    let mut parser = parse::Parser::new(lexer);
+    let emitter = emit::Emitter::new("out.c");
+    let mut parser = parse::Parser::new(lexer, emitter);
 
     parser.program();
-    println!("Parsing completed");
+    println!("Compiling completed.");
 }
 

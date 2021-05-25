@@ -128,7 +128,7 @@ impl Lexer {
                 }
                 let tok_text: String = self
                     .source
-                    .get(start_pos..self.cur_pos as usize + 1)
+                    .get(start_pos..self.cur_pos as usize)
                     .unwrap()
                     .into_iter()
                     .collect();
