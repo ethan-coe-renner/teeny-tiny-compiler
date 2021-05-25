@@ -9,7 +9,7 @@ pub struct Lexer {
 }
 
 impl Lexer {
-    pub fn new(input: &str) -> Self {
+    pub fn new(input: String) -> Self {
         let mut new = Lexer {
             source: input.chars().collect::<Vec<char>>(),
             cur_char: '\0', // doesn't matter what this character is
@@ -187,6 +187,7 @@ impl Lexer {
     }
 }
 
+#[derive(Clone)]
 pub struct Token {
     pub text: String,
     pub kind: TokenType,

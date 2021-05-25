@@ -1,13 +1,22 @@
 mod lex;
+mod parse;
+
+use std::env;
+use std::fs;
 
 fn main() {
-    let input ="IF+-123 foo*THEN/";
-    let mut lexer = lex::Lexer::new(input);
+    println!("Teeny Tiny Compiler");
 
-    let mut token = lexer.get_token();
-    while token.kind != lex::TokenType::EOF {
-	println!("{:?}",token.kind);
-	token = lexer.get_token();
-    }
+    let args: Vec<String> = env::args().collect();
+
+    let filename = &args[1];
+
+    let input = fs::read_to_string(filename).expect("Error reading file");
+
+    let lexer = lex::Lexer::new(input);
+    let mut parser = parse::Parser::new(lexer);
+
+    parser.program();
+    println!("Parsing completed");
 }
 
