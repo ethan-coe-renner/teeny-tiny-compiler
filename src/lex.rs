@@ -227,6 +227,9 @@ pub enum TokenType {
     WHILE = 109,
     REPEAT = 110,
     ENDWHILE = 111,
+    AND = 112,
+    OR = 113,
+    NOT = 114,
     // Operators.
     EQ = 201 ,
     PLUS = 202,
@@ -239,7 +242,6 @@ pub enum TokenType {
     LTEQ = 209,
     GT = 210,
     GTEQ = 211,
-
 }
 
 impl fmt::Display for TokenType {
