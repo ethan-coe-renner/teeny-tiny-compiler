@@ -20,7 +20,7 @@ impl Lexer {
         new
     }
 
-    pub fn next_char(&mut self) {
+    fn next_char(&mut self) {
         self.cur_pos += 1;
         if self.cur_pos >= self.source.len() as i64 {
             self.cur_char = '\0'; // EOF
@@ -29,7 +29,7 @@ impl Lexer {
         }
     }
 
-    pub fn peek(&self) -> char {
+    fn peek(&self) -> char {
         if self.cur_pos + 1 >= self.source.len() as i64 {
             '\0'
         } else {
