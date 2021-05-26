@@ -101,7 +101,7 @@ impl Parser {
         else if self.check_token(TokenType::IF) {
             self.next_token();
 	    self.emitter.emit("if(");
-	    self.comparison();
+	    self.lexpression();
 
             self._match(TokenType::THEN);
             self.nl();
@@ -118,7 +118,7 @@ impl Parser {
         else if self.check_token(TokenType::WHILE) {
             self.next_token();
 	    self.emitter.emit("while(");
-	    self.comparison();
+	    self.lexpression();
 
             self._match(TokenType::REPEAT);
             self.nl();
@@ -199,81 +199,103 @@ impl Parser {
         }
     }
 
+    // lexpression ::= comparison {("AND" | "OR") comparison}
+    fn lexpression(&mut self) {
+	self.comparison();
+
+	while self.check_token(TokenType::AND) || self.check_token(TokenType::OR) {
+	    if self.check_token(TokenType::AND) {
+		self.emitter.emit("&&");
+	    }
+	    else {
+		self.emitter.emit("||");
+	    }
+	    self.next_token();
+	    self.comparison();
+	}
+    }
+
     // comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
     fn comparison(&mut self) {
-        self.expression();
+	if self.check_token(TokenType::NOT) {
+	    self.emitter.emit("!");
+	    self.next_token();
+	}
+	self.emitter.emit("(");
+	self.expression();
 
-        if self.is_comparison_operator() {
+	if self.is_comparison_operator() {
 	    self.emitter.emit(&self.cur_token.text);
 	    self.next_token();
-            self.expression();
-        } else {
-            panic!("Expected comparison operator at: {}", self.cur_token.text)
-        }
+	    self.expression();
+	} else {
+	    panic!("Expected comparison operator at: {}", self.cur_token.text)
+	}
 
-        while self.is_comparison_operator() {
+	while self.is_comparison_operator() {
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-            self.expression();
-        }
+	    self.next_token();
+	    self.expression();
+	}
+	self.emitter.emit(")");
     }
 
     fn is_comparison_operator(&self) -> bool {
-        self.check_token(TokenType::GT)
-            || self.check_token(TokenType::GTEQ)
-            || self.check_token(TokenType::LT)
-            || self.check_token(TokenType::LTEQ)
-            || self.check_token(TokenType::EQEQ)
-            || self.check_token(TokenType::NOTEQ)
+	self.check_token(TokenType::GT)
+	    || self.check_token(TokenType::GTEQ)
+	    || self.check_token(TokenType::LT)
+	    || self.check_token(TokenType::LTEQ)
+	    || self.check_token(TokenType::EQEQ)
+	    || self.check_token(TokenType::NOTEQ)
     }
 
     // expression ::= term {( "-" | "+" ) term}
     fn expression(&mut self) {
-        self.term();
+	self.term();
 
-        while self.check_token(TokenType::PLUS) || self.check_token(TokenType::MINUS) {
+	while self.check_token(TokenType::PLUS) || self.check_token(TokenType::MINUS) {
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-            self.term();
-        }
+	    self.next_token();
+	    self.term();
+	}
     }
 
     // term ::= unary {( "/" | "*" ) unary}
     fn term(&mut self) {
-        self.unary();
+	self.unary();
 
-        while self.check_token(TokenType::ASTERISK) || self.check_token(TokenType::SLASH) {
+	while self.check_token(TokenType::ASTERISK) || self.check_token(TokenType::SLASH) {
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-            self.unary();
-        }
+	    self.next_token();
+	    self.unary();
+	}
     }
 
     // unary ::= ["+" | "-"] primary
     fn unary(&mut self) {
-        if self.check_token(TokenType::PLUS) || self.check_token(TokenType::MINUS) {
+	if self.check_token(TokenType::PLUS) || self.check_token(TokenType::MINUS) {
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-        }
-        self.primary();
+	    self.next_token();
+	}
+	self.primary();
     }
 
     // primary ::= number | ident
     fn primary(&mut self) {
-        if self.check_token(TokenType::NUMBER) {
+	if self.check_token(TokenType::NUMBER) {
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-        } else if self.check_token(TokenType::IDENT) {
-            if !self.symbols.contains(&self.cur_token.text) {
-                panic!(
-                    "Referencing variable before assignment: {}",
-                    self.cur_token.text
-                )
-            }
+	    self.next_token();
+	} else if self.check_token(TokenType::IDENT) {
+	    if !self.symbols.contains(&self.cur_token.text) {
+		panic!(
+		    "Referencing variable before assignment: {}",
+		    self.cur_token.text
+		)
+	    }
 	    self.emitter.emit(&self.cur_token.text);
-            self.next_token();
-        } else {
-            panic!("Unexpected token at {}", self.cur_token.text);
-        }
+	    self.next_token();
+	} else {
+	    panic!("Unexpected token at {}", self.cur_token.text);
+	}
     }
 }

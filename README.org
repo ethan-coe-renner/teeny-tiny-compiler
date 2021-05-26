@@ -3,17 +3,18 @@
 This is a compiler of Teeny Tiny written in rust.
 It was created following [[https://web.eecs.utk.edu/~azh/blog/teenytinycompiler1.html][this guide]], which creates the compiler in python.
 
-The grammer for Teeny Tiny is as follows (copied from guide):
+The grammer for Teeny Tiny is as follows:
 #+begin_src text
   program ::= {statement}
   statement ::= "PRINT" (expression | string) nl
-      | "IF" comparison "THEN" nl {statement} "ENDIF" nl
-      | "WHILE" comparison "REPEAT" nl {statement} "ENDWHILE" nl
+      | "IF" lexpression "THEN" nl {statement} "ENDIF" nl
+      | "WHILE" lexpression "REPEAT" nl {statement} "ENDWHILE" nl
       | "LABEL" ident nl
       | "GOTO" ident nl
       | "LET" ident "=" expression nl
       | "INPUT" ident nl
-  comparison ::= expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
+  lexpression ::= comparison {("AND" | "OR") comparison}
+  comparison ::= ["NOT"] expression (("==" | "!=" | ">" | ">=" | "<" | "<=") expression)+
   expression ::= term {( "-" | "+" ) term}
   term ::= unary {( "/" | "*" ) unary}
   unary ::= ["+" | "-"] primary
@@ -21,6 +22,15 @@ The grammer for Teeny Tiny is as follows (copied from guide):
   nl ::= '\n'+
 #+end_src
 
-I hope to work further and add some of the features mentioned in the
-"The project continues..." section of Part 3 of the guide, but as of
-now, this repository simply recreates the guide in Rust.
+* Things I've added
+Here is a list of functionality that I've implemented on top of what the guide presents.
+- ~AND~, ~OR~, and ~NOT~ can go in logical expressions
+  - This is reflected in the grammer, however the following illustrates its use:
+    #+begin_src text
+      "=>" indicates evaluation
+
+      9 > 8 AND 4 < 9 => true
+      NOT 9 > 8 AND 4 < 9 => false
+
+      NOT 9 < 8 AND NOT 4 > 9 => true
+    #+end_src
